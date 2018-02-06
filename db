@@ -1,0 +1,90 @@
+
+CREATE TABLE [dbo].[Regions] (
+    [Id]   INT            PRIMARY KEY IDENTITY (1, 1) NOT NULL,
+    [Name] NVARCHAR (MAX) NULL
+);
+
+
+CREATE TABLE [dbo].[Cities] (
+    [Id]       INT            IDENTITY (1, 1) NOT NULL,
+    [Name]     NVARCHAR (MAX) NULL,
+    [RegionId] INT            NOT NULL
+);
+
+
+GO
+CREATE NONCLUSTERED INDEX [IX_RegionId]
+    ON [dbo].[Cities]([RegionId] ASC);
+
+
+GO
+ALTER TABLE [dbo].[Cities]
+    ADD CONSTRAINT [PK_dbo.Cities] PRIMARY KEY CLUSTERED ([Id] ASC);
+
+
+GO
+ALTER TABLE [dbo].[Cities]
+    ADD CONSTRAINT [FK_dbo.Cities_dbo.Regions_RegionId] FOREIGN KEY ([RegionId]) REFERENCES [dbo].[Regions] ([Id]) ON DELETE CASCADE;
+
+
+
+CREATE TABLE [dbo].[People] (
+    [Id]        INT            IDENTITY (1, 1) NOT NULL,
+    [FirstName] NVARCHAR (MAX) NULL,
+    [LastName]  NVARCHAR (MAX) NULL,
+    [CityId]    INT            NOT NULL
+);
+
+
+GO
+CREATE NONCLUSTERED INDEX [IX_CityId]
+    ON [dbo].[People]([CityId] ASC);
+
+
+GO
+ALTER TABLE [dbo].[People]
+    ADD CONSTRAINT [PK_dbo.People] PRIMARY KEY CLUSTERED ([Id] ASC);
+
+
+GO
+ALTER TABLE [dbo].[People]
+    ADD CONSTRAINT [FK_dbo.People_dbo.Cities_CityId] FOREIGN KEY ([CityId]) REFERENCES [dbo].[Cities] ([Id]) ON DELETE CASCADE;
+
+
+SET IDENTITY_INSERT [dbo].[Regions] ON
+INSERT INTO [dbo].[Regions] ([Id], [Name]) VALUES (1, N'Mazowieckie')
+INSERT INTO [dbo].[Regions] ([Id], [Name]) VALUES (2, N'Podlaskie')
+INSERT INTO [dbo].[Regions] ([Id], [Name]) VALUES (3, N'Lubelskie')
+SET IDENTITY_INSERT [dbo].[Regions] OFF
+
+SET IDENTITY_INSERT [dbo].[Cities] ON
+INSERT INTO [dbo].[Cities] ([Id], [Name], [RegionId]) VALUES (1, N'Pruszków', 1)
+INSERT INTO [dbo].[Cities] ([Id], [Name], [RegionId]) VALUES (2, N'Warszawa', 1)
+INSERT INTO [dbo].[Cities] ([Id], [Name], [RegionId]) VALUES (3, N'Stara Miłosna', 1)
+INSERT INTO [dbo].[Cities] ([Id], [Name], [RegionId]) VALUES (4, N'Białystok', 2)
+INSERT INTO [dbo].[Cities] ([Id], [Name], [RegionId]) VALUES (5, N'Łomża', 2)
+INSERT INTO [dbo].[Cities] ([Id], [Name], [RegionId]) VALUES (6, N'Biała Podlaska', 3)
+INSERT INTO [dbo].[Cities] ([Id], [Name], [RegionId]) VALUES (7, N'Lublin', 3)
+SET IDENTITY_INSERT [dbo].[Cities] OFF
+
+SET IDENTITY_INSERT [dbo].[People] ON
+INSERT INTO [dbo].[People] ([Id], [FirstName], [LastName], [CityId]) VALUES (1, N'Adam', N'Abacki', 1)
+INSERT INTO [dbo].[People] ([Id], [FirstName], [LastName], [CityId]) VALUES (2, N'Barbara', N'Babacka', 2)
+INSERT INTO [dbo].[People] ([Id], [FirstName], [LastName], [CityId]) VALUES (3, N'Cezary', N'Cabacki', 3)
+INSERT INTO [dbo].[People] ([Id], [FirstName], [LastName], [CityId]) VALUES (4, N'Daniel', N'Dabacki', 4)
+INSERT INTO [dbo].[People] ([Id], [FirstName], [LastName], [CityId]) VALUES (5, N'Ewa', N'Ebacka', 5)
+INSERT INTO [dbo].[People] ([Id], [FirstName], [LastName], [CityId]) VALUES (6, N'Filip', N'Fabacki', 6)
+INSERT INTO [dbo].[People] ([Id], [FirstName], [LastName], [CityId]) VALUES (7, N'Grażyna', N'Gabacka', 7)
+SET IDENTITY_INSERT [dbo].[People] OFF
+
+
+
+
+
+CREATE PROCEDURE ToSamoNazwisko
+    @LastName nvarchar(50) 
+AS 
+    SELECT People.FirstName, People.LastName, Cities.Name CityName, Regions.Name RegionName
+    FROM People, Cities, Regions
+    WHERE LastName = @LastName AND People.CityId=Cities.Id AND Cities.RegionId=Regions.Id
+
